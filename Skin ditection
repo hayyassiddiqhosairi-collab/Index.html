@@ -1,0 +1,394 @@
+Index.html
+An app that is used to find skin diseases.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skin Condition Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .app-header {
+            margin-bottom: 30px;
+        }
+
+        .app-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .app-subtitle {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .disclaimer {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+
+        .start-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .start-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .webcam-section {
+            margin: 30px 0;
+        }
+
+        .webcam-container {
+            position: relative;
+            display: inline-block;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .webcam-container canvas {
+            display: block;
+            border-radius: 15px;
+        }
+
+        .capture-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            pointer-events: none;
+        }
+
+        .results-section {
+            margin-top: 30px;
+        }
+
+        .results-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .prediction-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #667eea;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .prediction-label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .prediction-confidence {
+            font-size: 1.2rem;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .high-confidence {
+            border-left-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.05);
+        }
+
+        .high-confidence .prediction-confidence {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 25px;
+                margin: 10px;
+            }
+            
+            .app-title {
+                font-size: 2rem;
+            }
+            
+            .prediction-card {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="app-header">
+            <h1 class="app-title">Skin Analysis</h1>
+            <p class="app-subtitle">AI-Powered Skin Condition Detection</p>
+            
+            <div class="disclaimer">
+                <strong>⚠️ Medical Disclaimer:</strong> This tool is for educational purposes only and should not replace professional medical advice. Always consult with a qualified dermatologist for proper diagnosis and treatment.
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="start-button" class="start-button" onclick="initializeCamera()">
+                Start Camera Analysis
+            </button>
+        </div>
+
+        <div id="status" class="status info" style="display: none;">
+            Ready to analyze skin conditions
+        </div>
+
+        <div class="webcam-section">
+            <div id="webcam-container" class="webcam-container" style="display: none;">
+                <div class="capture-overlay"></div>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <div id="results-title" class="results-title" style="display: none;">Analysis Results</div>
+            <div id="label-container"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    
+    <script>
+        // Note: You'll need to replace this with your actual model URL
+        const MODEL_URL = "./my_model/";
+        
+        let model, webcam, labelContainer, maxPredictions;
+        let isAnalyzing = false;
+
+        async function initializeCamera() {
+            const startButton = document.getElementById('start-button');
+            const status = document.getElementById('status');
+            const webcamContainer = document.getElementById('webcam-container');
+            const resultsTitle = document.getElementById('results-title');
+            
+            try {
+                startButton.disabled = true;
+                startButton.innerHTML = '<div class="loading"></div> Loading Model...';
+                
+                status.style.display = 'block';
+                status.textContent = 'Loading AI model...';
+                
+                // Load the model
+                const modelURL = MODEL_URL + "model.json";
+                const metadataURL = MODEL_URL + "metadata.json";
+                
+                model = await tmImage.load(modelURL, metadataURL);
+                maxPredictions = model.getTotalClasses();
+                
+                status.textContent = 'Setting up camera...';
+                
+                // Setup webcam
+                const flip = true;
+                webcam = new tmImage.Webcam(300, 300, flip);
+                await webcam.setup();
+                await webcam.play();
+                
+                // Show webcam
+                webcamContainer.style.display = 'inline-block';
+                webcamContainer.appendChild(webcam.canvas);
+                
+                // Setup prediction labels
+                labelContainer = document.getElementById('label-container');
+                labelContainer.innerHTML = '';
+                
+                for (let i = 0; i < maxPredictions; i++) {
+                    const predictionDiv = document.createElement("div");
+                    predictionDiv.className = "prediction-card";
+                    predictionDiv.innerHTML = `
+                        <span class="prediction-label">Analyzing...</span>
+                        <span class="prediction-confidence">0%</span>
+                    `;
+                    labelContainer.appendChild(predictionDiv);
+                }
+                
+                resultsTitle.style.display = 'block';
+                status.textContent = 'Camera active - Analysis in progress';
+                status.className = 'status info';
+                
+                startButton.style.display = 'none';
+                isAnalyzing = true;
+                
+                // Start prediction loop
+                window.requestAnimationFrame(loop);
+                
+            } catch (error) {
+                console.error('Error initializing:', error);
+                status.textContent = 'Error: Could not load model or access camera. Please check if model files are available.';
+                status.className = 'status warning';
+                startButton.disabled = false;
+                startButton.textContent = 'Try Again';
+            }
+        }
+
+        async function loop() {
+            if (isAnalyzing && webcam) {
+                webcam.update();
+                await predict();
+                window.requestAnimationFrame(loop);
+            }
+        }
+
+        async function predict() {
+            try {
+                const prediction = await model.predict(webcam.canvas);
+                
+                // Sort predictions by confidence
+                const sortedPredictions = prediction.sort((a, b) => b.probability - a.probability);
+                
+                for (let i = 0; i < maxPredictions; i++) {
+                    const predictionCard = labelContainer.children[i];
+                    const confidence = (sortedPredictions[i].probability * 100).toFixed(1);
+                    const className = sortedPredictions[i].className;
+                    
+                    // Update card content
+                    predictionCard.querySelector('.prediction-label').textContent = className;
+                    predictionCard.querySelector('.prediction-confidence').textContent = confidence + '%';
+                    
+                    // Highlight high confidence predictions
+                    if (sortedPredictions[i].probability > 0.7) {
+                        predictionCard.classList.add('high-confidence');
+                    } else {
+                        predictionCard.classList.remove('high-confidence');
+                    }
+                }
+                
+                // Update status based on highest confidence prediction
+                const highestConfidence = sortedPredictions[0];
+                const status = document.getElementById('status');
+                
+                if (highestConfidence.probability > 0.8) {
+                    status.textContent = `High confidence detection: ${highestConfidence.className}`;
+                    status.className = 'status warning';
+                } else if (highestConfidence.probability > 0.6) {
+                    status.textContent = `Moderate confidence detection: ${highestConfidence.className}`;
+                    status.className = 'status info';
+                } else {
+                    status.textContent = 'Analyzing... Please ensure good lighting and clear skin visibility';
+                    status.className = 'status info';
+                }
+                
+            } catch (error) {
+                console.error('Prediction error:', error);
+            }
+        }
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                isAnalyzing = false;
+            } else if (webcam && model) {
+                isAnalyzing = true;
+                window.requestAnimationFrame(loop);
+            }
+        });
+    </script>
+</body>
+</html>
